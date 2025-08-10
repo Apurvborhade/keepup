@@ -12,7 +12,7 @@ model Monitor {
   intervalSec Int               // how often to ping, in seconds
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-
+  active      Boolean?
   histories   MonitorHistory[]
 }
 

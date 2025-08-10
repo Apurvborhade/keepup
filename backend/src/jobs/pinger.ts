@@ -11,6 +11,7 @@ async function pingMonitors() {
         try {
             const res = await fetch(monitor.url, { method: "GET" })
             const latency = Date.now() - start;
+
             await prisma.monitorHistory.create({
                 data: {
                     monitorId: monitor.id,
@@ -18,6 +19,15 @@ async function pingMonitors() {
                     latencyMs: latency,
                     statusCode: res.status
                 }
+            })
+            await prisma.monitor.update({
+                where: {
+                    id: monitor.id
+                },
+                data: {
+                    active: true
+                }
+
             })
             console.log(`✅ ${monitor.url} - ${res.status} (${latency}ms)`);
         } catch (err: any) {
@@ -30,6 +40,15 @@ async function pingMonitors() {
                     error: err.message,
                 }
             });
+            await prisma.monitor.update({
+                where: {
+                    id: monitor.id
+                },
+                data: {
+                    active: false
+                }
+
+            })
             console.error(`❌ ${monitor.url} - ${err.message}`);
         }
     }
