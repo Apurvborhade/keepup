@@ -3,7 +3,6 @@ import fetch from 'node-fetch'
 import prisma from "../prisma";
 
 async function pingMonitors() {
-    console.log("Monitor Pinger Job Started 🟢")
     const monitors = await prisma.monitor.findMany();
 
     for (const monitor of monitors) {
