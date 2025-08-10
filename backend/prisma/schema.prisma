@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+model Monitor {
+  id          String           @id @default(uuid()) 
+  name        String
+  url         String
+  intervalSec Int               // how often to ping, in seconds
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  histories   MonitorHistory[]
+}
+
+model MonitorHistory {
+  id          String   @id @default(uuid())
+  monitorId   String
+  monitor     Monitor  @relation(fields: [monitorId], references: [id])
+  statusCode  Int?     // null if no response
+  success     Boolean
+  latencyMs   Int?     // null if request failed before timing
+  checkedAt   DateTime @default(now())
+  error       String?  // optional error message
+}
