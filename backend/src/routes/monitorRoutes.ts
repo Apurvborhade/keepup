@@ -4,6 +4,7 @@ import prisma from '../prisma';
 const router = express.Router();
 
 
+
 // 1. Create a new monitor (name, URL, interval) - POST '/'
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -29,6 +30,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
             data: {
                 name: name.trim(),
                 url: url.trim(),
+                userId: req.user.id,
                 intervalSec,
             }
         });

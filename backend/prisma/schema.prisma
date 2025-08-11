@@ -1,28 +1,45 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+model Otp {
+  otp   Int    @unique
+  email String
+}
+
+model User {
+  id       String    @id @default(uuid())
+  username String
+  email    String    @unique
+  password String
+  Monitor  Monitor[]
+}
+
 model Monitor {
-  id          String           @id @default(uuid()) 
+  id          String           @id @default(uuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id])
   name        String
   url         String
-  intervalSec Int               // how often to ping, in seconds
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  intervalSec Int // how often to ping, in seconds
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   active      Boolean?
   histories   MonitorHistory[]
 }
 
 model MonitorHistory {
-  id          String   @id @default(uuid())
-  monitorId   String
-  monitor     Monitor  @relation(fields: [monitorId], references: [id])
-  statusCode  Int?     // null if no response
-  success     Boolean
-  latencyMs   Int?     // null if request failed before timing
-  checkedAt   DateTime @default(now())
-  error       String?  // optional error message
+  id         String   @id @default(uuid())
+  monitorId  String
+  monitor    Monitor  @relation(fields: [monitorId], references: [id])
+  statusCode Int? // null if no response
+  success    Boolean
+  latencyMs  Int? // null if request failed before timing
+  checkedAt  DateTime @default(now())
+  error      String? // optional error message
 }
