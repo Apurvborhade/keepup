@@ -189,11 +189,11 @@ router.get('/me', async (req: express.Request, res: express.Response) => {
 
 router.post('/refresh-token', (req: Request, res: Response, next: NextFunction) => {
     try {
-
+        
         if (!req.user) {
             throw new AppError("User not Authenticated", 401)
         }
-
+    
         const newToken = generateToken(req.user.id, req.user.username, req.user.email);
         res.cookie('token', newToken, {
             httpOnly: true,
