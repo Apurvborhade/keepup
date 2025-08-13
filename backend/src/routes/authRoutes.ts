@@ -146,4 +146,67 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     }
 })
 
+/**
+ * GET /api/auth/me
+ * Get current user profile
+ */
+router.get('/me', async (req: express.Request, res: express.Response) => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({
+                error: 'User not authenticated',
+                code: 'NO_USER_ID',
+            });
+            return;
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                Monitor: true
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found',
+                code: 'USER_NOT_FOUND',
+            });
+        }
+
+        res.json({
+            user
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: 'Failed to fetch user profile',
+            code: 'PROFILE_ERROR',
+        });
+    }
+});
+
+router.post('/refresh-token', (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        if (!req.user) {
+            throw new AppError("User not Authenticated", 401)
+        }
+
+        const newToken = generateToken(req.user.id, req.user.username, req.user.email);
+        res.cookie('token', newToken, {
+            httpOnly: true,
+            secure: true,
+            path: '/',
+            sameSite: 'none',
+            maxAge: 3600000,
+        }).json({
+            message: 'Authentication successful'
+        });
+    } catch (error) {
+        next(error)
+    }
+})
+
 export default router;
