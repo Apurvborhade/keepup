@@ -8,13 +8,60 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Globe, ArrowLeft, Save, Zap, Shield, Activity, Clock } from "lucide-react"
+import { Globe, ArrowLeft, Save, Zap, Shield, Activity, Clock, CloudFog } from "lucide-react"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import AxiosInstance from "@/lib/axios"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export default function CreateMonitor() {
-  const [] = useState()
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const [formData, setFormData] = useState<{
+    name: string,
+    url: string,
+    interval: string,
+    timeout: number,
+    description: string
+  }>({
+    name: "",
+    url: "",
+    interval: "300",
+    timeout: 30,
+    description: ""
+  })
+
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    console.log(formData)
+  }
+
+
+  const submitHandler = async () => {
+    console.log(formData)
+    try {
+      setIsLoading(true)
+      const { data } = await AxiosInstance.post('/monitor', {
+        name: formData.name,
+        url: formData.url,
+        intervalSec: parseInt(formData.interval)
+      })
+      if (data) {
+        toast.success("Success fully created new monitor", { style: { backgroundColor: '#10b981', } })
+        router.push('/dasboard')
+      }
+      console.log("Monitor Created: ", data)
+    } catch (error) {
+      console.log("Error Creating New Monitor", error)
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <header className="sticky top-0 z-50 px-4 lg:px-6 h-16 flex items-center border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60">
@@ -89,6 +136,8 @@ export default function CreateMonitor() {
                       <Input
                         id="name"
                         placeholder="My Website Monitor"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange("name", e.target.value)}
                         className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20"
                       />
                     </div>
@@ -103,6 +152,8 @@ export default function CreateMonitor() {
                       id="url"
                       placeholder="https://example.com"
                       type="url"
+                      value={formData.url}
+                      onChange={(e) => handleInputChange("url", e.target.value)}
                       className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20"
                     />
                   </div>
@@ -112,7 +163,8 @@ export default function CreateMonitor() {
                       <Label htmlFor="interval" className="text-slate-700 dark:text-slate-300 font-medium">
                         Check Interval
                       </Label>
-                      <Select defaultValue="300">
+                      <Select defaultValue="300" value={formData.interval}
+                        onValueChange={(value) => handleInputChange("interval", value)}>
                         <SelectTrigger className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60">
                           <SelectValue />
                         </SelectTrigger>
@@ -135,6 +187,7 @@ export default function CreateMonitor() {
                         defaultValue="30"
                         min="1"
                         max="300"
+                        onChange={(e) => handleInputChange("timeout", e.target.value)}
                         className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20"
                       />
                     </div>
@@ -146,6 +199,7 @@ export default function CreateMonitor() {
                     </Label>
                     <Textarea
                       id="description"
+                      onChange={(e) => handleInputChange("description", e.target.value)}
                       placeholder="Brief description of what this monitor checks..."
                       rows={3}
                       className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20"
@@ -153,171 +207,6 @@ export default function CreateMonitor() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="advanced" className="space-y-6">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="method" className="text-slate-700 dark:text-slate-300 font-medium">
-                        HTTP Method
-                      </Label>
-                      <Select defaultValue="GET">
-                        <SelectTrigger className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="GET">GET</SelectItem>
-                          <SelectItem value="POST">POST</SelectItem>
-                          <SelectItem value="PUT">PUT</SelectItem>
-                          <SelectItem value="DELETE">DELETE</SelectItem>
-                          <SelectItem value="HEAD">HEAD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="expected-status" className="text-slate-700 dark:text-slate-300 font-medium">
-                        Expected Status Code
-                      </Label>
-                      <Input
-                        id="expected-status"
-                        placeholder="200"
-                        defaultValue="200"
-                        className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="headers" className="text-slate-700 dark:text-slate-300 font-medium">
-                      Custom Headers (JSON)
-                    </Label>
-                    <Textarea
-                      id="headers"
-                      placeholder='{"Authorization": "Bearer token", "Content-Type": "application/json"}'
-                      rows={4}
-                      className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20 font-mono text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="body" className="text-slate-700 dark:text-slate-300 font-medium">
-                      Request Body
-                    </Label>
-                    <Textarea
-                      id="body"
-                      placeholder="Request body for POST/PUT requests..."
-                      rows={4}
-                      className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20 font-mono text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="keyword" className="text-slate-700 dark:text-slate-300 font-medium">
-                      Keyword Check
-                    </Label>
-                    <Input
-                      id="keyword"
-                      placeholder="Text that should be present in response"
-                      className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20"
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-3 p-4 rounded-lg bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60">
-                    <Switch id="ssl-check" />
-                    <div>
-                      <Label htmlFor="ssl-check" className="text-slate-700 dark:text-slate-300 font-medium">
-                        Monitor SSL Certificate
-                      </Label>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        Get alerts before your SSL certificate expires
-                      </p>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="alerts" className="space-y-6">
-                  <div className="space-y-6">
-                    <div className="p-4 rounded-lg bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <Switch id="email-alerts" defaultChecked />
-                        <div>
-                          <Label htmlFor="email-alerts" className="text-slate-700 dark:text-slate-300 font-medium">
-                            Email Alerts
-                          </Label>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            Receive notifications via email when issues are detected
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
-                          Email Address
-                        </Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="alerts@example.com"
-                          className="bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-lg bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <Switch id="webhook-alerts" />
-                        <div>
-                          <Label htmlFor="webhook-alerts" className="text-slate-700 dark:text-slate-300 font-medium">
-                            Webhook Alerts
-                          </Label>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            Send alerts to external services like Slack or Discord
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="webhook-url" className="text-slate-700 dark:text-slate-300 font-medium">
-                          Webhook URL
-                        </Label>
-                        <Input
-                          id="webhook-url"
-                          placeholder="https://hooks.slack.com/services/..."
-                          className="bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20 font-mono text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-6 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="alert-threshold" className="text-slate-700 dark:text-slate-300 font-medium">
-                          Alert After (failures)
-                        </Label>
-                        <Select defaultValue="1">
-                          <SelectTrigger className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">1 failure</SelectItem>
-                            <SelectItem value="2">2 failures</SelectItem>
-                            <SelectItem value="3">3 failures</SelectItem>
-                            <SelectItem value="5">5 failures</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="recovery-alert" className="text-slate-700 dark:text-slate-300 font-medium">
-                          Recovery Alert
-                        </Label>
-                        <Select defaultValue="yes">
-                          <SelectTrigger className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Send recovery alert</SelectItem>
-                            <SelectItem value="no">No recovery alert</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
               </Tabs>
 
               <div className="flex justify-end space-x-4 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
@@ -328,9 +217,9 @@ export default function CreateMonitor() {
                 >
                   <Link href="/dashboard">Cancel</Link>
                 </Button>
-                <Button className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg shadow-emerald-500/25">
+                <Button onClick={submitHandler} className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg shadow-emerald-500/25" disabled={isLoading}>
                   <Save className="h-4 w-4 mr-2" />
-                  Create Monitor
+                  {isLoading ? 'Creating Monitor...' : 'Create Monitor'}
                 </Button>
               </div>
             </CardContent>

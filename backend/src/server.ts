@@ -7,7 +7,7 @@ import './jobs/pinger'
 
 // Routes
 import AuthRoutes from './routes/authRoutes'
-
+import MonitorRoutes from './routes/monitorRoutes'
 
 // Required Middlewares
 import cookieParser from 'cookie-parser'
@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/auth', AuthRoutes);
 
 // Monitor Routes
-app.use('/api/monitor')
+app.use('/api/monitor', MonitorRoutes)
 
 app.use(errorHandler)
 app.listen(PORT, () => {

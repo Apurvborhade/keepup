@@ -22,6 +22,7 @@ router.post('/', authenticateToken, async (req: Request, res: Response, next: Ne
     try {
         const { name, url, intervalSec } = req.body;
 
+        console.log(typeof name,typeof url,typeof intervalSec)
         // Validate input types and presence
         if (
             typeof name !== 'string' || name.trim() === '' ||
@@ -175,3 +176,5 @@ router.delete('/:id', authenticateToken, async (req: Request, res: Response, nex
         next(error);
     }
 });
+
+export default router
