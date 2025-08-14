@@ -5,6 +5,9 @@ import dotenv from 'dotenv'
 import errorHandler from './middleware/errorHandler';
 import './jobs/pinger'
 
+// Routes
+import AuthRoutes from './routes/authRoutes'
+
 
 // Required Middlewares
 import cookieParser from 'cookie-parser'
@@ -22,6 +25,11 @@ app.use(cookieParser())
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Auth Routes
+app.use('/api/auth', AuthRoutes);
+
+// Monitor Routes
+app.use('/api/monitor')
 
 app.use(errorHandler)
 app.listen(PORT, () => {

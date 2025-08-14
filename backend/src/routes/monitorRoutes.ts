@@ -1,12 +1,24 @@
 import express, { NextFunction } from 'express'
 import { Request, Response } from 'express'
 import prisma from '../prisma';
+import AppError from '../utils/AppError';
+import { authenticateToken } from '../utils/auth';
 const router = express.Router();
 
-
+declare global {
+    namespace Express {
+        interface Request {
+            user?: {
+                id: string;
+                username: string;
+                email?: string;
+            }
+        }
+    }
+}
 
 // 1. Create a new monitor (name, URL, interval) - POST '/'
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name, url, intervalSec } = req.body;
 
@@ -25,7 +37,9 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         } catch {
             return res.status(400).json({ error: "Invalid URL format." });
         }
-
+        if (!req.user) {
+            throw new AppError("Unauthorized", 401);
+        }
         const monitor = await prisma.monitor.create({
             data: {
                 name: name.trim(),
@@ -42,7 +56,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // 2. List all monitors with their latest status. - GET /
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Get all monitors
         const monitors = await prisma.monitor.findMany({
@@ -85,7 +99,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // 3. Get details of a single monitor (no history). - GET /:id
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
         const monitor = await prisma.monitor.findUnique({
@@ -109,7 +123,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // 4. Get full ping history for that monitor. - GET /:id/history
-router.get('/:id/history', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/history', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
         // Check if monitor exists
@@ -133,7 +147,7 @@ router.get('/:id/history', async (req: Request, res: Response, next: NextFunctio
 });
 
 // 5. Remove a monitor (and optionally its history).DELETE /:id
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 

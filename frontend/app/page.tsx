@@ -59,7 +59,7 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative w-full py-20 md:py-32 lg:py-40 overflow-hidden">
+        <section className="relative w-full py-20 md:py-32 lg:py-40 overflow-hidden flex justify-center">
           {/* Background Elements */}
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-transparent to-blue-50/30 dark:from-emerald-950/20 dark:via-transparent dark:to-blue-950/10" />
           <div className="absolute top-1/4 -right-64 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
@@ -209,7 +209,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="w-full py-20 md:py-32 bg-white dark:bg-slate-900 relative">
+        <section id="features" className="w-full py-20 md:py-32 bg-white dark:bg-slate-900 relative flex justify-center">
           <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white dark:from-slate-900/50 dark:to-slate-900" />
           <div className="relative container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
@@ -295,7 +295,7 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-muted/50">
+        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-muted/50 flex justify-center">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -363,7 +363,7 @@ export default function LandingPage() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32">
+        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32 flex justify-center">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -479,7 +479,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="relative w-full py-20 md:py-32 overflow-hidden">
+        <section className="relative w-full py-20 md:py-32 overflow-hidden flex justify-center">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-blue-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
@@ -520,7 +520,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="bg-slate-50 dark:bg-slate-950 border-t border-slate-200/60 dark:border-slate-800/60">
+      <footer className="bg-slate-50 dark:bg-slate-950 border-t border-slate-200/60 dark:border-slate-800/60 flex justify-center">
         <div className="container px-4 md:px-6 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center space-x-3">

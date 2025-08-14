@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -23,7 +23,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const { register, isAuthenticated } = useAuth()
+  const { registerInit, verifyOtp, isAuthenticated } = useAuth()
   const router = useRouter()
 
   // Redirect if already authenticated
@@ -48,9 +48,14 @@ export default function RegisterPage() {
     setIsLoading(true)
     setError("")
 
-    const result = await register(formData.name, formData.email, formData.password)
+    const result = await registerInit(formData.username, formData.email, formData.password)
+
 
     if (result.success) {
+      sessionStorage.setItem(
+        'registerData',
+        JSON.stringify({ username: formData.username, email: formData.email, password: formData.password })
+      );
       router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`)
     } else {
       setError(result.error || "Registration failed")
@@ -108,14 +113,14 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-slate-300">
-                  Full Name
+                  Username
                 </Label>
                 <Input
-                  id="name"
+                  id="username"
                   type="text"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  placeholder="Enter your Username"
+                  value={formData.username}
+                  onChange={(e) => handleInputChange("username", e.target.value)}
                   required
                   className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
                 />

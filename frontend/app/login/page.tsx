@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Globe, Eye, EyeOff, ArrowLeft, AlertCircle } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
+import AxiosInstance from "@/lib/axios"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -20,7 +21,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, user } = useAuth()
   const router = useRouter()
 
   // Redirect if already authenticated
@@ -28,19 +29,18 @@ export default function LoginPage() {
     if (isAuthenticated) {
       router.push("/dashboard")
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, router, user])
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
 
-    const result = await login(email, password)
-
-    if (result.success) {
-      router.push("/dashboard")
-    } else {
-      setError(result.error || "Login failed")
+    try {
+      await login(email, password)
+    } catch (error: any) {
+      setError(error.response.data?.message || "Login failed")
     }
 
     setIsLoading(false)

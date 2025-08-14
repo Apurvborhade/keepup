@@ -21,6 +21,7 @@ export function UserNav() {
     logout()
     router.push("/")
   }
+  console.log(user)
 
   if (!user) return null
 
@@ -29,14 +30,14 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-blue-500">
-            <span className="text-sm font-medium text-white">{user.name.charAt(0).toUpperCase()}</span>
+            <span className="text-sm font-medium text-white p-3">{user.username?.charAt(0)}</span>
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-slate-800 border-slate-700" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none text-white">{user.name}</p>
+            <p className="text-sm font-medium leading-none text-white">{user.username}</p>
             <p className="text-xs leading-none text-slate-400">{user.email}</p>
           </div>
         </DropdownMenuLabel>

@@ -1,3 +1,4 @@
+'use client'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -7,8 +8,19 @@ import { DashboardChart } from "@/components/dashboard-chart"
 import { MonitorList } from "@/components/monitor-list"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserNav } from "@/components/user-nav"
+import { useAuth } from "@/contexts/auth-context"
+import { useEffect } from "react"
+import {  useRouter } from "next/navigation"
 
 export default function Dashboard() {
+  const { user } = useAuth()
+  const router = useRouter()
+  
+  useEffect(() => {
+    if (!user) {
+      router.push('/login?redirect=dashboard')
+    }
+  }, [user])
   const stats = [
     {
       title: "Active Monitors",
@@ -151,11 +163,10 @@ export default function Dashboard() {
                   <div className="text-3xl font-bold text-slate-900 dark:text-white mb-1">{stat.value}</div>
                   <div className="flex items-center gap-1">
                     <div
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        stat.trend === "up"
-                          ? "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
-                          : "bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400"
-                      }`}
+                      className={`text-xs px-2 py-1 rounded-full ${stat.trend === "up"
+                        ? "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
+                        : "bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400"
+                        }`}
                     >
                       {stat.change}
                     </div>
@@ -266,13 +277,12 @@ export default function Dashboard() {
                     >
                       <div className="relative">
                         <div
-                          className={`w-3 h-3 rounded-full mt-1 ${
-                            activity.status === "up"
-                              ? "bg-emerald-500 shadow-lg shadow-emerald-500/50"
-                              : activity.status === "warning"
-                                ? "bg-amber-500 shadow-lg shadow-amber-500/50"
-                                : "bg-red-500 shadow-lg shadow-red-500/50"
-                          }`}
+                          className={`w-3 h-3 rounded-full mt-1 ${activity.status === "up"
+                            ? "bg-emerald-500 shadow-lg shadow-emerald-500/50"
+                            : activity.status === "warning"
+                              ? "bg-amber-500 shadow-lg shadow-amber-500/50"
+                              : "bg-red-500 shadow-lg shadow-red-500/50"
+                            }`}
                         />
                         {activity.status === "up" && (
                           <div className="absolute inset-0 w-3 h-3 bg-emerald-500 rounded-full animate-ping opacity-20"></div>

@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation"
 export default function VerifyOTPPage() {
   const searchParams = useSearchParams()
   const email = searchParams.get("email") || ""
-
+  const username = searchParams.get("username") || ""
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [isLoading, setIsLoading] = useState(false)
   const [isResending, setIsResending] = useState(false)
@@ -23,9 +23,22 @@ export default function VerifyOTPPage() {
   const [canResend, setCanResend] = useState(false)
   const [error, setError] = useState("")
   const [attemptsLeft, setAttemptsLeft] = useState(3)
+  const [registerData, setRegisterData] = useState<{ username: string; email: string; password: string } | null>(null);
 
-  const { updateUser } = useAuth()
+  const { verifyOtp, isAuthenticated } = useAuth()
   const router = useRouter()
+  useEffect(() => {
+    console.log("IsAuthenticated",isAuthenticated)
+    if (isAuthenticated) {
+      router.push("/dashboard")
+    }
+  }, [isAuthenticated, router])
+  useEffect(() => {
+    const data = sessionStorage.getItem('registerData');
+    if (data) {
+      setRegisterData(JSON.parse(data));
+    }
+  }, []);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -49,30 +62,10 @@ export default function VerifyOTPPage() {
     setError("")
 
     try {
-      const response = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: otpCode }),
-      })
+      const { success, error } = await verifyOtp(registerData?.username as string, registerData?.email as string, registerData?.password as string, otp.join(""))
 
-      const data = await response.json()
-
-      if (response.ok) {
-        const userData = {
-          id: "temp-id",
-          name: "New User",
-          email: email,
-        }
-        updateUser(userData)
-        localStorage.setItem("pinger_user", JSON.stringify(userData))
-        document.cookie = "pinger_auth=true; path=/; max-age=86400"
-
-        router.push("/dashboard")
-      } else {
-        setError(data.error)
-        if (data.attemptsLeft !== undefined) {
-          setAttemptsLeft(data.attemptsLeft)
-        }
+      if (!success) {
+        setError(error as string)
         setOtp(["", "", "", "", "", ""])
       }
     } catch (error) {

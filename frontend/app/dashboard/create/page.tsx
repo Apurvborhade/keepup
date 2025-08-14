@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,8 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Globe, ArrowLeft, Save, Zap, Shield, Activity, Clock } from "lucide-react"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useState } from "react"
 
 export default function CreateMonitor() {
+  const [] = useState()
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <header className="sticky top-0 z-50 px-4 lg:px-6 h-16 flex items-center border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60">
@@ -54,37 +58,7 @@ export default function CreateMonitor() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-              {[
-                { icon: Globe, name: "Website", desc: "HTTP/HTTPS monitoring", color: "blue" },
-                { icon: Activity, name: "API", desc: "REST API endpoints", color: "emerald" },
-                { icon: Shield, name: "SSL", desc: "Certificate monitoring", color: "amber" },
-                { icon: Clock, name: "Ping", desc: "Network connectivity", color: "purple" },
-              ].map((type, i) => (
-                <Card
-                  key={i}
-                  className="group cursor-pointer border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm hover:shadow-xl hover:shadow-slate-200/20 dark:hover:shadow-slate-900/20 transition-all duration-300 hover:-translate-y-1"
-                >
-                  <CardContent className="p-4 text-center">
-                    <div
-                      className={`inline-flex p-3 rounded-lg mb-3 ${
-                        type.color === "blue"
-                          ? "bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
-                          : type.color === "emerald"
-                            ? "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
-                            : type.color === "amber"
-                              ? "bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400"
-                              : "bg-purple-100 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400"
-                      } group-hover:scale-110 transition-transform duration-200`}
-                    >
-                      <type.icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white">{type.name}</h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{type.desc}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+
           </div>
 
           <Card className="border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm shadow-xl shadow-slate-200/10 dark:shadow-slate-900/20">
@@ -96,25 +70,14 @@ export default function CreateMonitor() {
             </CardHeader>
             <CardContent className="p-6">
               <Tabs defaultValue="basic" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-3 bg-slate-100/50 dark:bg-slate-800/50">
+                <TabsList className="grid w-full grid-cols-1 bg-slate-100/50 dark:bg-slate-800/50">
                   <TabsTrigger
                     value="basic"
                     className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700"
                   >
                     Basic Settings
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="advanced"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700"
-                  >
-                    Advanced
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="alerts"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700"
-                  >
-                    Alerts
-                  </TabsTrigger>
+
                 </TabsList>
 
                 <TabsContent value="basic" className="space-y-6">
@@ -129,22 +92,7 @@ export default function CreateMonitor() {
                         className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500/20"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="type" className="text-slate-700 dark:text-slate-300 font-medium">
-                        Monitor Type
-                      </Label>
-                      <Select defaultValue="http">
-                        <SelectTrigger className="bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/60">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="http">HTTP/HTTPS</SelectItem>
-                          <SelectItem value="ping">Ping</SelectItem>
-                          <SelectItem value="tcp">TCP Port</SelectItem>
-                          <SelectItem value="dns">DNS</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+
                   </div>
 
                   <div className="space-y-2">

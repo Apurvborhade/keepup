@@ -1,12 +1,13 @@
 "use client"
 
+import AxiosInstance from "@/lib/axios"
 import type React from "react"
 
 import { createContext, useContext, useEffect, useState } from "react"
 
 interface User {
   id: string
-  name: string
+  username: string
   email: string
 }
 
@@ -15,7 +16,8 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  registerInit: (username: string, email: string, password: string) => Promise<{ success: boolean, message?: string, error?: string }>
+  verifyOtp: (username: string, email: string, password: string, otp: string) => Promise<{ success: boolean, message?: string, error?: string }>
   logout: () => void
   updateUser: (userData: Partial<User>) => void
 }
@@ -28,17 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check for existing session on mount
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
-        const storedUser = localStorage.getItem("pinger_user")
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
-          document.cookie = "pinger_auth=true; path=/; max-age=86400"
-        }
+        const { data } = await AxiosInstance.get('/auth/me');
+        console.log('Check Auth User: ', data)
+        setUser(data.user)
       } catch (error) {
-        console.error("Error checking auth:", error)
-        localStorage.removeItem("pinger_user")
-        document.cookie = "pinger_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+        console.log("Error checking auth:", error)
       } finally {
         setIsLoading(false)
       }
@@ -47,51 +45,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth()
   }, [])
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
+  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string; error?: string }> => {
 
-      const data = await response.json()
+    const res = await AxiosInstance.post('/auth/login', {
+      email,
+      password
+    })
 
-      if (response.ok) {
-        const userData = data.user
-        setUser(userData)
-        localStorage.setItem("pinger_user", JSON.stringify(userData))
-        document.cookie = "pinger_auth=true; path=/; max-age=86400"
-        return { success: true }
-      } else {
-        return { success: false, error: data.error }
-      }
-    } catch (error) {
-      return { success: false, error: "Network error. Please try again." }
-    }
+
+    setUser(res.data.user)
+
+    return { success: true, message: res.data };
+
   }
 
-  const register = async (
-    name: string,
+  const registerInit = async (
+    username: string,
     email: string,
     password: string,
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; message?: string; error?: string }> => {
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+      const res = await AxiosInstance.post('/auth/register-init', {
+        username,
+        email,
+        password
       })
 
-      const data = await response.json()
+      console.log("Register Init: ", res)
+      return { success: true, message: res.data };
 
-      if (response.ok) {
-        return { success: true }
+    } catch (error: any) {
+      console.log(error)
+      return { success: false, error: error.data }
+    }
+  }
+  const verifyOtp = async (
+    username: string,
+    email: string,
+    password: string,
+    otp: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> => {
+    try {
+      const { data } = await AxiosInstance.post('/auth/verify-otp', {
+        username,
+        email,
+        password,
+        otp
+      })
+
+
+      if (data) {
+        setUser(data.user)
+        return { success: true, message: data as string }
       } else {
         return { success: false, error: data.error }
       }
-    } catch (error) {
-      return { success: false, error: "Network error. Please try again." }
+
+    } catch (error: any) {
+      return { success: false, error: error.data.message }
     }
   }
 
@@ -114,7 +125,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     isAuthenticated: !!user,
     login,
-    register,
+    registerInit,
+    verifyOtp,
     logout,
     updateUser,
   }

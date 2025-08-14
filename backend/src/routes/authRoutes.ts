@@ -1,9 +1,22 @@
 import express, { NextFunction, Request, Response } from 'express'
 import prisma from '../prisma';
-import { generateOtp, generateToken, hashPassword, isValidPassword } from '../utils/auth';
+import { authenticateToken, generateOtp, generateToken, hashPassword, isValidPassword } from '../utils/auth';
 import { sendEmail } from '../utils/sendMail';
 const router = express.Router();
+import AppError from '../utils/AppError'
 
+
+declare global {
+    namespace Express {
+        export interface Request {
+            user?: {
+                id: string;
+                username: string;
+                email?: string;
+            }
+        }
+    }
+}
 // Register Init
 router.post('/register-init', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -33,12 +46,13 @@ router.post('/register-init', async (req: Request, res: Response, next: NextFunc
                 otp
             }
         })
-        await sendEmail({
+        console.log(otp)
+        const mailSendRes = await sendEmail({
             message: `<p>Your OTP is: <strong>${otp}</strong></p>`,
             subject: 'Your Otp',
             to: email
         })
-
+        console.log("Mail: ", mailSendRes)
         res.json({ message: "OTP sent to your email" });
     } catch (error) {
         next(error)
@@ -50,21 +64,28 @@ router.post('/register-init', async (req: Request, res: Response, next: NextFunc
 router.post('/verify-otp', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username, email, password, otp } = req.body
-
+        console.log("Raw Password: ", password)
+        if (!username || !email || !password || !otp) {
+            throw new AppError("Please Provide all details", 400)
+        }
         // Find the latest OTP for the given email and otp
         const existingOtp = await prisma.otp.findFirst({
             where: {
-                email: email,
-                otp: otp
+                AND: [
+                    { email: email },
+                    { otp: parseInt(otp) }
+                ]
             },
             orderBy: {
                 // If you had a createdAt field, you could order by it. Since schema doesn't, just findFirst.
             }
         });
-
+        if (!existingOtp) {
+            throw new AppError("Incorrect Otp", 400)
+        }
         if (existingOtp) {
             // Delete the OTP after verification
-            await prisma.otp.delete({
+            await prisma.otp.deleteMany({
                 where: {
                     otp: existingOtp.otp
                 }
@@ -74,18 +95,21 @@ router.post('/verify-otp', async (req: Request, res: Response, next: NextFunctio
         }
 
 
-        const hashedPassword = hashPassword(password)
-
+        const hashedPassword = await hashPassword(password)
+        console.log("Hashed Password: ", hashedPassword)
         const user = await prisma.user.create({
             data: {
                 email,
                 password: hashedPassword,
                 username
+            },
+            include: {
+                Monitor: true
             }
         })
         // Generate JWT token
         const token = generateToken(user.id, user.username, user.email || undefined);
-
+        req.user = user
         res.cookie('token', token, {
             httpOnly: true,
             secure: true,
@@ -93,7 +117,13 @@ router.post('/verify-otp', async (req: Request, res: Response, next: NextFunctio
             sameSite: 'none',
             maxAge: 3600000,
         }).json({
-            message: 'Authentication successful'
+            message: 'Authentication successful',
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                monitors: user.Monitor
+            }
         });
 
     } catch (error) {
@@ -115,13 +145,16 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
         const user = await prisma.user.findUnique({
             where: {
                 email: email
+            },
+            include: {
+                Monitor: true
             }
         })
 
         if (!user) {
             throw new AppError("User does not exist", 404)
         }
-        const validPassword = isValidPassword(password, user?.password)
+        const validPassword = await isValidPassword(password, user?.password)
 
         if (!validPassword) {
             throw new AppError("Invalid Password", 400)
@@ -136,13 +169,16 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
             sameSite: 'none',
             maxAge: 3600000,
         }).json({
-            message: 'Authentication successful'
+            message: 'Authentication successful',
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                monitors: user.Monitor
+            }
         });
     } catch (error) {
-        res.status(500).json({
-            error: 'Authentication failed',
-            code: 'AUTH_ERROR',
-        });
+        next(error)
     }
 })
 
@@ -150,10 +186,10 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
  * GET /api/auth/me
  * Get current user profile
  */
-router.get('/me', async (req: express.Request, res: express.Response) => {
+router.get('/me', authenticateToken, async (req: express.Request, res: express.Response) => {
     try {
         const userId = req.user?.id;
-
+        console.log(req.user)
         if (!userId) {
             res.status(401).json({
                 error: 'User not authenticated',
@@ -177,7 +213,12 @@ router.get('/me', async (req: express.Request, res: express.Response) => {
         }
 
         res.json({
-            user
+            user: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                monitors: user.Monitor,
+            }
         });
     } catch (error) {
         res.status(500).json({
@@ -189,11 +230,11 @@ router.get('/me', async (req: express.Request, res: express.Response) => {
 
 router.post('/refresh-token', (req: Request, res: Response, next: NextFunction) => {
     try {
-        
+
         if (!req.user) {
             throw new AppError("User not Authenticated", 401)
         }
-    
+
         const newToken = generateToken(req.user.id, req.user.username, req.user.email);
         res.cookie('token', newToken, {
             httpOnly: true,
