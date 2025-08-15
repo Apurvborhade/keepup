@@ -106,10 +106,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("pinger_user")
-    document.cookie = "pinger_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+  const logout = async () => {
+    try {
+      const { data } = await AxiosInstance.post('/auth/logout')
+      if (data) {
+        setUser(null)
+        return { success: true, message: data as string }
+      } else {
+        return { success: false, error: data.error }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.data.message }
+    }
   }
 
   const updateUser = (userData: Partial<User>) => {

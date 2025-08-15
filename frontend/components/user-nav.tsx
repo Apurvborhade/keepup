@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/contexts/auth-context"
 import { User, LogOut, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 export function UserNav() {
   const { user, logout } = useAuth()
@@ -19,9 +20,12 @@ export function UserNav() {
 
   const handleLogout = () => {
     logout()
-    router.push("/")
   }
-  console.log(user)
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+    }
+  }, [user])
 
   if (!user) return null
 

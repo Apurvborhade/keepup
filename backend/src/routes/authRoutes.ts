@@ -131,7 +131,19 @@ router.post('/verify-otp', async (req: Request, res: Response, next: NextFunctio
     }
 })
 
+router.post('/logout', (req: Request, res: Response) => {
+    // Clear the token cookie
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: true,
+        path: '/',
+        sameSite: 'none'
+    });
 
+    res.json({
+        message: 'Logged out successfully'
+    });
+});
 // Login User
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
     try {
