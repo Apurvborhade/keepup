@@ -51,7 +51,7 @@ export default function CreateMonitor() {
       })
       if (data) {
         toast.success("Success fully created new monitor", { style: { backgroundColor: '#10b981', } })
-        router.push('/dasboard')
+        router.push('/dashboard')
       }
       console.log("Monitor Created: ", data)
     } catch (error) {

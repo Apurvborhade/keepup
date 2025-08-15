@@ -17,7 +17,7 @@ const data = [
   { time: "22:00", responseTime: 245, uptime: 100, incidents: 0 },
 ]
 
-export function DashboardChart() {
+export function DashboardChart({ incidents, avgResponseTime }: { incidents: number, avgResponseTime: number }) {
   return (
     <div className="space-y-4">
       <ResponsiveContainer width="100%" height={320}>
@@ -99,15 +99,12 @@ export function DashboardChart() {
 
       <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
         <div className="text-center space-y-1">
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">187ms</div>
+          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{avgResponseTime ? avgResponseTime : 0}ms</div>
           <div className="text-xs text-slate-500 dark:text-slate-400">Avg Response</div>
         </div>
+
         <div className="text-center space-y-1">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">99.97%</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Uptime (24h)</div>
-        </div>
-        <div className="text-center space-y-1">
-          <div className="text-2xl font-bold text-slate-600 dark:text-slate-400">2</div>
+          <div className="text-2xl font-bold text-slate-600 dark:text-slate-400">{incidents ? incidents : 0}</div>
           <div className="text-xs text-slate-500 dark:text-slate-400">Incidents</div>
         </div>
       </div>

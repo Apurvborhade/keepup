@@ -22,7 +22,7 @@ router.post('/', authenticateToken, async (req: Request, res: Response, next: Ne
     try {
         const { name, url, intervalSec } = req.body;
 
-        console.log(typeof name,typeof url,typeof intervalSec)
+        console.log(typeof name, typeof url, typeof intervalSec)
         // Validate input types and presence
         if (
             typeof name !== 'string' || name.trim() === '' ||
@@ -62,6 +62,7 @@ router.get('/', authenticateToken, async (req: Request, res: Response, next: Nex
         // Get all monitors
         const monitors = await prisma.monitor.findMany({
             orderBy: { createdAt: 'asc' },
+            where: { userId: req.user?.id },
             include: {
                 histories: {
                     orderBy: { checkedAt: 'desc' },
@@ -80,6 +81,8 @@ router.get('/', authenticateToken, async (req: Request, res: Response, next: Nex
                 intervalSec: monitor.intervalSec,
                 createdAt: monitor.createdAt,
                 updatedAt: monitor.updatedAt,
+                histories:monitor.histories,
+                active:monitor.active,
                 latestStatus: latestHistory
                     ? {
                         id: latestHistory.id,
